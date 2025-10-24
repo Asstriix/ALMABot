@@ -1,0 +1,27 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root{ --ink:#0b0b0c; --mist:#f5f6f7; --silver:#c9cdd3; }
+html,body{ @apply bg-mist text-ink font-jet; }
+.glass{ @apply bg-white/70 backdrop-blur-md border border-black/5; }
+.btn{
+  @apply h-11 px-4 inline-flex items-center justify-center font-bold rounded-xl select-none;
+  background: linear-gradient(180deg, #fff, #f1f3f5);
+  border: 1px solid rgba(0,0,0,.08);
+  box-shadow: 0 8px 22px rgba(0,0,0,.08), inset 0 0 0 1px rgba(255,255,255,.6);
+  transition: transform .12s ease, box-shadow .2s ease, filter .2s ease;
+}
+.btn:hover{ filter: saturate(105%) brightness(1.02); box-shadow: 0 10px 28px rgba(0,0,0,.12) }
+.btn:active{ transform: translateY(1px); }
+.inputShell{
+  @apply glass w-full max-w-3xl rounded-2xl shadow-glow px-4 py-2 flex items-center gap-2;
+  transition: box-shadow .2s ease, border-color .2s ease;
+}
+.inputShell:focus-within{ box-shadow: 0 12px 36px rgba(0,0,0,.16), 0 0 0 2px rgba(0,0,0,.06); }
+.inp{ @apply flex-1 h-12 bg-transparent outline-none placeholder:text-silver text-ink }
+.bubble-user{ @apply self-end max-w-[78%] rounded-2xl px-4 py-2 bg-graphite text-paper shadow-glass text-sm animate-slideUp }
+.bubble-bot{ @apply self-start max-w-[78%] rounded-2xl px-4 py-2 bg-white text-ink border border-black/5 shadow-soft text-sm animate-slideUp }
+.card{ @apply border border-black/5 rounded-2xl bg-white shadow-soft }
+.badge{ @apply inline-flex items-center gap-2 text-[10px] uppercase tracking-wide text-graphite/70 border border-black/10 rounded-full px-3 py-[3px] bg-white/70 }

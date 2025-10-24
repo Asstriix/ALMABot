@@ -1,0 +1,109 @@
+
+<main class="relative min-h-screen">
+  <!-- Hero input centered -->
+  <section id="hero" class="absolute inset-0 flex items-center justify-center p-4 z-50">
+    <form id="chat-form" method="post" action="#" novalidate class="inputShell group">
+      <svg class="w-5 h-5 text-graphite/60" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M11 19a8 8 0 100-16 8 8 0 000 16z" stroke="currentColor" stroke-width="2"/>
+        <path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <input id="message" name="message" type="text" required class="inp" placeholder="Contame qué te trae por acá…"/>
+      <button class="btn" type="submit">
+        <span class="relative">Enviar<span class="absolute inset-0 rounded-xl animate-pulseRing"></span></span>
+      </button>
+    </form>
+  </section>
+
+  <!-- Feed -->
+  <section id="chat-box" class="hidden absolute inset-0 flex flex-col gap-3 p-4 md:p-8 z-0 overflow-auto pb-28"></section>
+
+  <!-- Composer fixed -->
+  <div id="composer" class="hidden fixed left-0 right-0 bottom-0 p-3 md:p-4 z-50">
+    <form id="chat-form-sticky" method="post" action="#" novalidate class="inputShell mx-auto">
+      <input id="message2" type="text" class="inp" placeholder="Escribí cuando quieras…" required/>
+      <button class="btn" type="submit">Enviar</button>
+    </form>
+  </div>
+</main>
+
+<script>
+(function(){
+  document.addEventListener("submit",(e)=>{
+    const t=e.target; if (t && (t.id==="chat-form"||t.id==="chat-form-sticky")) e.preventDefault();
+  },{capture:true});
+
+  const hero=document.getElementById("hero");
+  const box=document.getElementById("chat-box");
+  const form=document.getElementById("chat-form");
+  const composer=document.getElementById("composer");
+  const form2=document.getElementById("chat-form-sticky");
+  const input=document.getElementById("message");
+  const input2=document.getElementById("message2");
+  const sendUrl="/send";
+
+  function ensureBottomPadding(){
+    const h=(composer && composer.offsetHeight)||0;
+    box.style.paddingBottom=(h+24)+"px";
+  }
+  function scrollToBottom(){
+    ensureBottomPadding();
+    requestAnimationFrame(()=>{ box.scrollTop = box.scrollHeight; });
+  }
+  const ro=new ResizeObserver(()=>ensureBottomPadding());
+  if (composer) ro.observe(composer);
+  window.addEventListener("resize", ensureBottomPadding);
+
+  function showChatUI(){
+    hero.classList.add("opacity-0","pointer-events-none","translate-y-3","transition");
+    setTimeout(()=>{
+      hero.classList.add("hidden");
+      box.classList.remove("hidden");
+      composer.classList.remove("hidden");
+      ensureBottomPadding();
+    },180);
+  }
+
+  function appendBubble(who, text){
+    if (!text) return;
+    const el=document.createElement("div");
+    el.className= who==="user" ? "bubble-user" : "bubble-bot";
+    el.textContent=text;
+    box.appendChild(el);
+    scrollToBottom();
+  }
+
+  function rowsAny(p){ const r=(p&&p.rows)||(p&&p.items)||[]; return Array.isArray(r)?r:[]; }
+
+  function appendCards(payload){
+    // opcional: si tu bot devuelve rows, podrías renderizar cards aquí
+    // por ahora, solo mostramos el message
+    return;
+  }
+
+  async function send(msg){
+    appendBubble("user", msg);
+    try{
+      const r=await fetch(sendUrl,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({message:msg})});
+      const text=await r.text();
+      let data; try{ data = text? JSON.parse(text): { ok:false, error:"empty_response" }; }catch{ data={ ok:false, error:"invalid_json", raw:text }; }
+      const reply = (typeof data.message==="string" && data.message.trim()) ? data.message.trim() : (data.ok===false? "Ahora no puedo responder. Probá de nuevo.":"");
+      if (reply) appendBubble("bot", reply);
+      appendCards(data);
+    }catch(_){
+      appendBubble("bot","Ahora no puedo responder. Probá de nuevo.");
+    }
+  }
+
+  form.addEventListener("submit",(ev)=>{
+    ev.preventDefault();
+    const v=input.value.trim(); if(!v) return;
+    if (hero && !hero.classList.contains("hidden")) showChatUI();
+    input.value=""; send(v);
+  });
+  form2.addEventListener("submit",(ev)=>{
+    ev.preventDefault();
+    const v=input2.value.trim(); if(!v) return;
+    input2.value=""; send(v);
+  });
+})();
+</script>
